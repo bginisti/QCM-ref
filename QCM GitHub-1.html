@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QCM Mathématique aléatoire</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+    .question {
+      margin-bottom: 30px;
+    }
+    .answers div {
+      background-color: #f5f5f5;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 10px;
+      margin: 10px 0;
+    }
+    .correct {
+      background-color: #d4edda !important;
+      border-color: #28a745;
+    }
+    .wrong {
+      background-color: #f8d7da !important;
+      border-color: #dc3545;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #score {
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 18px;
+    }
+  </style>
+
+  <!-- MathJax -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+<body>
+
+  <h2>QCM Mathématique</h2>
+  <form id="qcm-form"></form>
+  <div id="score"></div>
+
+  <script>
+    const questions = [
+      {
+        text: "1. Quelle est la dérivée de \\( f(x) = x^2 \\) ?",
+        answers: [
+          { text: "\\( 2x \\)", correct: true },
+          { text: "\\( x \\)", correct: false },
+          { text: "\\( x^2 \\)", correct: false }
+        ]
+      },
+      {
+        text: "2. Résoudre \\( x^2 = 9 \\)",
+        answers: [
+          { text: "\\( x = \\pm 3 \\)", correct: true },
+          { text: "\\( x = 3 \\)", correct: false },
+          { text: "\\( x = -3 \\)", correct: false }
+        ]
+      }
+    ];
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    function renderQuestions() {
+      const form = document.getElementById("qcm-form");
+      questions.forEach((q, index) => {
+        const questionDiv = document.createElement("div");
+        questionDiv.className = "question";
+        const questionTitle = document.createElement("p");
+        questionTitle.innerHTML = q.text;
+        questionDiv.appendChild(questionTitle);
+
+        const answerContainer = document.createElement("div");
+        answerContainer.className = "answers";
+
+        const shuffledAnswers = [...q.answers];
+        shuffle(shuffledAnswers);
+
+        shuffledAnswers.forEach((ans, i) => {
+          const div = document.createElement("div");
+          div.id = `q${index}_a${i}`;
+          const input = document.createElement("input");
+          input.type = "radio";
+          input.name = `q${index}`;
+          input.value = ans.correct ? "true" : "false";
+          input.id = `q${index}i${i}`;
+          const label = document.createElement("label");
+          label.setAttribute("for", input.id);
+          label.innerHTML = ans.text;
+          div.appendChild(input);
+          div.appendChild(label);
+          answerContainer.appendChild(div);
+        });
+
+        questionDiv.appendChild(answerContainer);
+        form.appendChild(questionDiv);
+      });
+
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = "Afficher le score";
+      btn.onclick = calculerScore;
+      form.appendChild(btn);
+
+      MathJax.typeset();
+    }
+
+    function calculerScore() {
+      let score = 0;
+      questions.forEach((q, index) => {
+        const selected = document.querySelector(`input[name="q${index}"]:checked`);
+        const inputs = document.querySelectorAll(`input[name="q${index}"]`);
+        inputs.forEach(input => input.disabled = true);
+        if (selected && selected.value === "true") {
+          score++;
+          selected.parentElement.classList.add("correct");
+        } else if (selected) {
+          selected.parentElement.classList.add("wrong");
+          const correctInput = [...inputs].find(i => i.value === "true");
+          if (correctInput) {
+            correctInput.parentElement.classList.add("correct");
+          }
+        }
+      });
+      document.getElementById("score").textContent = `Votre score est : ${score} / ${questions.length}`;
+      MathJax.typeset();
+    }
+
+    window.onload = renderQuestions;
+  </script>
+
+</body>
+</html>
